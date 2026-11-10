@@ -1,0 +1,23 @@
+传奇整理师 V11 · 关卡配置说明
+
+编辑文件：js/level.js
+编辑位置：LEVEL_CONFIGS 数组（文件上半部分，带有“关卡编辑区”标记）
+
+每个 { ... } 就是一关。复制一关即可添加；删除整个对象即可删除。
+字段说明：
+id：关卡编号（唯一正整数）
+name：关卡标题
+counts：商品数量，例 {milk:6,soda:8,cookie:9}
+columns：货架每排有多少列
+depth：货架纵深有多少排
+groupFillRatio：横向铺满比例，例 0.6、0.8、0.9、1.0
+basketCapacity：篮子容量
+seed：地面商品散落种子
+wrongShelf：初始错放清单，kind 商品种类，layer 货架类别（drink/snack/daily），slot 槽位编号（从0开始，逐排编号）
+groundLayout：地面商品聚簇布局，centers 是百分比中心点数组，radiusBase/radiusStep/radiusCycle 控制散落范围。
+
+自动分组：每种商品独占连续的列，从最前排开始摆放；分配列数先保证容纳所有商品，再根据 groupFillRatio 尽量铺满横向空间。商品总量较少、货架宽度不足等情况下，不保证恰好达到比例。
+
+注意：每一类货架的所有商品最少列数之和不能超过 columns。程序会检查并提示错误。
+商品种类需先在 js/level.js 顶部 ITEMS 中登记，且对应图片素材与 UI 映射要存在。
+V11 保留 V10 的商品尺寸、视觉遮挡、初始错放、地面散落方式和四关商品数量。

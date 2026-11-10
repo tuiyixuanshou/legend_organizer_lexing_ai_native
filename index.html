@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>传奇整理师 · 核心玩法原型</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="game">
+
+  <!-- 游戏首页：初次进入显示，可随时从游戏返回 -->
+  <section id="home-screen" class="home-screen" aria-label="游戏首页">
+    <div class="home-spark home-spark-a">✦</div><div class="home-spark home-spark-b">✧</div>
+    <div class="home-content">
+      <div class="home-kicker">✦ 便利店整理计划 ✦</div>
+      <h2 class="home-title">传奇<br><span>整理师</span></h2>
+      <p class="home-tagline">从杂乱无章，到整整齐齐！</p>
+      <div class="home-art" aria-hidden="true">
+        <div class="home-shelf-top">便利店 · 今日补货</div>
+        <div class="home-art-row"><img src="assets/milk.png" alt=""><img src="assets/soda.png" alt=""><img src="assets/wine.png" alt=""></div>
+        <div class="home-art-board"></div>
+        <div class="home-art-row"><img src="assets/chips.png" alt=""><img src="assets/cookie.png" alt=""><img src="assets/shampoo.png" alt=""></div>
+        <div class="home-art-board"></div>
+      </div>
+      <div class="home-stats"><span>📦 20 个关卡</span><span>🧺 20 种商品</span></div>
+      <button id="btn-home-play" class="home-main-btn" type="button">▶ 开始整理</button>
+      <div class="home-secondary-actions">
+        <button id="btn-home-levels" type="button">🛠 选择关卡</button>
+        <button id="btn-home-help" type="button">📖 玩法说明</button>
+      </div>
+    </div>
+    <div class="home-footer">每一件商品，都有它的位置。</div>
+  </section>
+
+  <!-- 顶部：标题 + 整理进度 -->
+  <header id="hud">
+    <div class="hud-row">
+      <div class="hud-title">
+        <span class="logo">🛒</span>
+        <h1>传奇整理师</h1>
+      </div>
+      <div class="dev-controls"><button id="btn-home" type="button">⌂ 首页</button><button id="btn-level-jump" type="button">🛠 选关</button><button id="btn-help" type="button">玩法</button></div>
+    </div>
+    <div class="hud-row progress-row">
+      <span class="progress-label" id="level-title">第 1 关 · 初次整理</span>
+      <div class="progress-track"><div id="progress-fill"></div></div>
+      <span id="progress-text">0/8</span>
+    </div>
+  </header>
+
+  <!-- 主体舞台 -->
+  <main id="stage">
+
+    <!-- 货架区：每层 4 个横向位置，纵深排数由关卡配置决定 -->
+    <section id="shelf-zone" aria-label="货架">
+      <div id="shelf"></div>
+    </section>
+
+    <!-- 地面区：散落商品 -->
+    <section id="ground-zone" aria-label="地面">
+      <div class="floor-shadow"></div>
+    </section>
+
+    <!-- 临时收纳篮 -->
+    <section id="basket-zone" aria-label="收纳篮">
+      <div id="basket">
+        <div class="basket-head">
+          <span class="basket-title">🧺 收纳篮</span>
+          <span id="basket-count" class="basket-count">0/5</span>
+        </div>
+        <div id="basket-slots" class="basket-slots"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 商品浮层：所有商品在这一个坐标系里，方便跨区域飞行动画 -->
+  <div id="products-layer"></div>
+
+  <!-- 轻提示 -->
+  <div id="toast" role="status"></div>
+
+  <!-- 玩法说明 -->
+  <div id="help-overlay" class="overlay hidden">
+    <div class="overlay-card">
+      <h2>怎么整理？</h2>
+      <ol class="help-steps">
+        <li><b>拾取</b>：点击货架或地面上<b>错位</b>的商品放进收纳篮（容量随关卡变化）；已正确归位的商品会被固定，无法再拾取。</li>
+        <li><b>选层</b>：点击还有空位的货架层选中它，其他层暂时变灰；点击其他位置或再次点击该层可取消选中；已满的层无法选中。</li>
+        <li><b>归位</b>：点击篮子中<b>高亮</b>的同类商品，篮中同类会全部自动飞入该层；点击不匹配的商品，货架会震动并退出选中。</li>
+        <li><b>腾挪</b>：正确位置被占时，先拾取占位的错位商品腾出空位，再归位正确的商品。篮子容量有限，注意腾挪顺序。</li>
+        <li><b>目标</b>：每层只摆对应类别的商品，所有商品归位、地面和篮子清空即可通关；货架不必放满。第5关开始可能因拾取顺序错误陷入死局，届时需要重新挑战。</li>
+      </ol>
+      <button id="btn-help-close" class="btn-primary" type="button">开始整理</button>
+    </div>
+  </div>
+
+  <!-- 开发测试入口：任意关卡直达 -->
+  <div id="level-jump-overlay" class="overlay hidden">
+    <div class="overlay-card">
+      <h2>🛠 测试选关</h2>
+      <p class="win-sub">选择关卡后将直接开始该关，当前进度会重置。</p>
+      <div id="level-jump-list" class="level-jump-list"></div>
+      <button id="btn-level-jump-close" class="btn-primary" type="button">返回游戏</button>
+    </div>
+  </div>
+
+  <!-- 通关结算 -->
+  <div id="win-overlay" class="overlay hidden">
+    <div class="overlay-card win-card">
+      <div class="win-emoji">✨</div>
+      <h2>整理完成！</h2>
+      <p class="win-sub">货架已恢复整齐，地面干干净净。</p>
+      <button id="btn-next" class="btn-primary" type="button">下一关</button>
+      <button id="btn-restart" class="btn-primary" type="button">重新体验</button>
+    </div>
+  </div>
+
+  <!-- 第5关策略死局提示：篮子已满且所有商品均无法归位 -->
+  <div id="stuck-overlay" class="overlay hidden">
+    <div class="overlay-card">
+      <div class="win-emoji">🧩</div>
+      <h2>陷入死局！</h2>
+      <p class="win-sub">篮子已经装满，商品却无法归位。下次先观察货架的堵塞关系，再决定拾取顺序。</p>
+      <button id="btn-stuck-restart" class="btn-primary" type="button">重新挑战本关</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="js/level.js"></script>
+<script src="js/game.js"></script>
+<script src="js/ui.js"></script>
+</body>
+</html>
