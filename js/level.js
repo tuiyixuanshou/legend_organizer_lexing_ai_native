@@ -69,34 +69,100 @@ const LEVEL_CONFIGS = [
     ],
     groundLayout:{centers:[[18,22],[45,24],[76,25],[26,62],[58,65],[81,69]],radiusBase:4,radiusStep:3.1,radiusCycle:5}
   }
-  ,{
-    // 第5关策略谜题：3件饼干堵住牛奶目标位，3件纸巾堵住饼干目标位，
-    // 3件牛奶堵住纸巾目标位。篮子仅3格，先拿满地上的牛奶会真实死局。
-    // 解法示例：拿饮料架饼干→零食架纸巾→日用品架牛奶，
-    // 依次归位牛奶→纸巾→饼干；随后清理剩余错放及地面商品。
-    id:5, name:"货架连环堵塞",
-    counts:{milk:3,wine:12,soda:12,cookie:3,croissant:9,tissue:3},
-    columns:10, depth:3, groupFillRatio:0.9, basketCapacity:3, seed:79,
-    wrongShelf:[
-      // 牛奶独占饮料架第1列、3排：0、10、20，全部被饼干堵住
-      {kind:"cookie",layer:"drink",slot:0},
-      {kind:"cookie",layer:"drink",slot:10},
-      {kind:"cookie",layer:"drink",slot:20},
-      // 饼干独占零食架第1-3列：0、1、2，全部被纸巾堵住
-      {kind:"tissue",layer:"snack",slot:0},
-      {kind:"tissue",layer:"snack",slot:1},
-      {kind:"tissue",layer:"snack",slot:2},
-      // 纸巾独占日用品架第1-3列：0、1、2，全部被牛奶堵住
-      {kind:"milk",layer:"daily",slot:0},
-      {kind:"milk",layer:"daily",slot:1},
-      {kind:"milk",layer:"daily",slot:2},
-      // 额外3件牛角包错放，增加清理量，但不堵住循环的唯一突破方式
-      {kind:"croissant",layer:"drink",slot:5},
-      {kind:"croissant",layer:"drink",slot:6},
-      {kind:"croissant",layer:"drink",slot:7}
+  ,
+  // ,{
+  //   // 第5关策略谜题：3件饼干堵住牛奶目标位，3件纸巾堵住饼干目标位，
+  //   // 3件牛奶堵住纸巾目标位。篮子仅3格，先拿满地上的牛奶会真实死局。
+  //   // 解法示例：拿饮料架饼干→零食架纸巾→日用品架牛奶，
+  //   // 依次归位牛奶→纸巾→饼干；随后清理剩余错放及地面商品。
+  //   id:5, name:"货架连环堵塞",
+  //   counts:{milk:3,wine:12,soda:12,cookie:3,croissant:9,tissue:3},
+  //   columns:10, depth:3, groupFillRatio:0.9, basketCapacity:3, seed:79,
+  //   wrongShelf:[
+  //     // 牛奶独占饮料架第1列、3排：0、10、20，全部被饼干堵住
+  //     {kind:"cookie",layer:"drink",slot:0},
+  //     {kind:"cookie",layer:"drink",slot:10},
+  //     {kind:"cookie",layer:"drink",slot:20},
+  //     // 饼干独占零食架第1-3列：0、1、2，全部被纸巾堵住
+  //     {kind:"tissue",layer:"snack",slot:0},
+  //     {kind:"tissue",layer:"snack",slot:1},
+  //     {kind:"tissue",layer:"snack",slot:2},
+  //     // 纸巾独占日用品架第1-3列：0、1、2，全部被牛奶堵住
+  //     {kind:"milk",layer:"daily",slot:0},
+  //     {kind:"milk",layer:"daily",slot:1},
+  //     {kind:"milk",layer:"daily",slot:2},
+  //     // 额外3件牛角包错放，增加清理量，但不堵住循环的唯一突破方式
+  //     {kind:"croissant",layer:"drink",slot:5},
+  //     {kind:"croissant",layer:"drink",slot:6},
+  //     {kind:"croissant",layer:"drink",slot:7}
+  //   ],
+  //   groundLayout:{centers:[[18,22],[45,24],[76,25],[26,62],[58,65],[81,69]],radiusBase:4,radiusStep:3.1,radiusCycle:5}
+  // }
+  {
+  // 第5关：货架整理挑战
+  // 核心机制：货架拥挤 + 顺序解锁
+  // 必须先清理货架上的错误商品，否则可能导致篮子装满、无法归位。
+
+  id: 5,
+  name: "货架整理挑战",
+
+  // 42件商品，6种类型
+  counts: {
+    milk: 3,
+    wine: 12,
+    soda: 12,
+    cookie: 3,
+    croissant: 9,
+    tissue: 3
+  },
+
+  columns: 10,
+  depth: 3,
+  groupFillRatio: 0.9,
+  basketCapacity: 3,
+  seed: 79,
+
+  wrongShelf: [
+    // 饮料区：牛奶的目标位置被曲奇占据
+    { kind: "cookie", layer: "drink", slot: 0 },
+    { kind: "cookie", layer: "drink", slot: 10 },
+    { kind: "cookie", layer: "drink", slot: 20 },
+
+    // 零食区：曲奇的目标位置被卫生纸占据
+    { kind: "tissue", layer: "snack", slot: 0 },
+    { kind: "tissue", layer: "snack", slot: 10 },
+    { kind: "tissue", layer: "snack", slot: 20 },
+
+    // 饮料区：增加错误摆放的牛角包
+    { kind: "croissant", layer: "drink", slot: 6 },
+    { kind: "croissant", layer: "drink", slot: 16 },
+    { kind: "croissant", layer: "drink", slot: 26 },
+
+    // 零食区：增加错误摆放的玻璃酒瓶
+    { kind: "wine", layer: "snack", slot: 6 },
+    { kind: "wine", layer: "snack", slot: 16 },
+    { kind: "wine", layer: "snack", slot: 26 },
+
+    // 日用品区：增加错误摆放的可乐
+    { kind: "soda", layer: "daily", slot: 6 },
+    { kind: "soda", layer: "daily", slot: 16 },
+    { kind: "soda", layer: "daily", slot: 26 }
+  ],
+
+  groundLayout: {
+    centers: [
+      [18, 22],
+      [45, 24],
+      [76, 25],
+      [26, 62],
+      [58, 65],
+      [81, 69]
     ],
-    groundLayout:{centers:[[18,22],[45,24],[76,25],[26,62],[58,65],[81,69]],radiusBase:4,radiusStep:3.1,radiusCycle:5}
+    radiusBase: 4,
+    radiusStep: 3.1,
+    radiusCycle: 5
   }
+}
 
   ,{
     // 第6关：大量整理，新增矿泉水（饮料区）。从策略关回归轻松整理。
@@ -156,14 +222,89 @@ const LEVEL_CONFIGS = [
     ],
     groundLayout:{centers:[[17,20],[41,19],[74,20],[21,58],[51,61],[80,64]],radiusBase:3.5,radiusStep:3.1,radiusCycle:6}
   },
-  {
-    // 第10关：策略挑战②；74件 / 10种。策略链：milk → cookie → tissue（最后一类先归位）。
-    id:10, name:"策略挑战②",
-    counts:{"wine":10,"milk":3,"cookie":3,"tissue":3,"soda":10,"croissant":9,"water":9,"chips":9,"shampoo":9,"chocolate":9},
-    columns:10, depth:5, groupFillRatio:0.85, basketCapacity:3, seed:319,
-    wrongShelf:[{"kind":"cookie","layer":"drink","slot":0},{"kind":"cookie","layer":"drink","slot":10},{"kind":"cookie","layer":"drink","slot":20},{"kind":"tissue","layer":"snack","slot":0},{"kind":"tissue","layer":"snack","slot":10},{"kind":"tissue","layer":"snack","slot":20}],
-    groundLayout:{centers:[[16,19],[43,21],[76,19],[22,59],[53,61],[82,63]],radiusBase:3.2,radiusStep:2.9,radiusCycle:7}
+  // {
+  //   // 第10关：策略挑战②；74件 / 10种。策略链：milk → cookie → tissue（最后一类先归位）。
+  //   id:10, name:"货架连环堵塞2",
+  //   counts:{"wine":10,"milk":3,"cookie":3,"tissue":3,"soda":10,"croissant":9,"water":9,"chips":9,"shampoo":9,"chocolate":9},
+  //   columns:10, depth:5, groupFillRatio:0.85, basketCapacity:3, seed:319,
+  //   wrongShelf:[{"kind":"cookie","layer":"drink","slot":0},{"kind":"cookie","layer":"drink","slot":10},{"kind":"cookie","layer":"drink","slot":20},{"kind":"tissue","layer":"snack","slot":0},{"kind":"tissue","layer":"snack","slot":10},{"kind":"tissue","layer":"snack","slot":20}],
+  //   groundLayout:{centers:[[16,19],[43,21],[76,19],[22,59],[53,61],[82,63]],radiusBase:3.2,radiusStep:2.9,radiusCycle:7}
+  // },
+
+{
+  // 第10关：混合货架阻塞
+  // 牛奶的三个目标位置被两件曲奇和一件卫生纸占据。
+  // 必须优先清理货架上的曲奇与卫生纸，
+  // 如果先拿三件牛奶，篮子会满且无法归位。
+
+  id: 10,
+  name: "混合货架阻塞",
+
+  counts: {
+    wine: 10,
+    milk: 3,
+    cookie: 3,
+    tissue: 3,
+    soda: 10,
+    croissant: 9,
+    water: 9,
+    chips: 9,
+    shampoo: 9,
+    chocolate: 9
   },
+
+  columns: 10,
+  depth: 5,
+  groupFillRatio: 0.85,
+  basketCapacity: 3,
+  seed: 319,
+
+  wrongShelf: [
+    // 核心阻塞：牛奶的三个目标槽位
+    { kind: "cookie", layer: "drink", slot: 0 },
+    { kind: "cookie", layer: "drink", slot: 10 },
+    { kind: "tissue", layer: "drink", slot: 20 },
+
+    // 其他货架增加大量错放商品
+    { kind: "wine", layer: "snack", slot: 30 },
+    { kind: "water", layer: "daily", slot: 32 },
+    { kind: "croissant", layer: "drink", slot: 34 },
+    { kind: "water", layer: "snack", slot: 36 },
+    { kind: "chips", layer: "daily", slot: 38 },
+
+    { kind: "wine", layer: "daily", slot: 40 },
+    { kind: "chips", layer: "drink", slot: 42 },
+    { kind: "water", layer: "snack", slot: 44 },
+    { kind: "chips", layer: "daily", slot: 46 },
+    { kind: "chocolate", layer: "drink", slot: 48 },
+
+    { kind: "wine", layer: "daily", slot: 31 },
+    { kind: "water", layer: "snack", slot: 33 },
+    { kind: "chips", layer: "drink", slot: 35 },
+    { kind: "croissant", layer: "daily", slot: 37 },
+    { kind: "wine", layer: "snack", slot: 39 },
+
+    { kind: "chocolate", layer: "drink", slot: 41 },
+    { kind: "croissant", layer: "daily", slot: 43 },
+    { kind: "chocolate", layer: "drink", slot: 47 },
+    { kind: "croissant", layer: "daily", slot: 49 }
+  ],
+
+  groundLayout: {
+    centers: [
+      [16, 19],
+      [43, 21],
+      [76, 19],
+      [22, 59],
+      [53, 61],
+      [82, 63]
+    ],
+    radiusBase: 3.2,
+    radiusStep: 2.9,
+    radiusCycle: 7
+  }
+},
+
   {
     // 第11关：橙汁上架；84件 / 11种。普通整理关，错放商品可逐步清理。
     id:11, name:"橙汁上架",
@@ -196,14 +337,117 @@ const LEVEL_CONFIGS = [
     wrongShelf:[{"kind":"cookie","layer":"drink","slot":12},{"kind":"wine","layer":"snack","slot":19},{"kind":"milk","layer":"daily","slot":26},{"kind":"candy","layer":"drink","slot":5},{"kind":"shampoo","layer":"snack","slot":12},{"kind":"croissant","layer":"daily","slot":19},{"kind":"tissue","layer":"drink","slot":0},{"kind":"soda","layer":"snack","slot":7},{"kind":"water","layer":"daily","slot":14},{"kind":"chips","layer":"drink","slot":27},{"kind":"orange_juice","layer":"snack","slot":4},{"kind":"chocolate","layer":"daily","slot":11},{"kind":"toothpaste","layer":"drink","slot":25},{"kind":"coffee","layer":"snack","slot":3},{"kind":"wine","layer":"daily","slot":10},{"kind":"cookie","layer":"drink","slot":26},{"kind":"milk","layer":"snack","slot":6},{"kind":"chocolate","layer":"daily","slot":13},{"kind":"chips","layer":"drink","slot":1},{"kind":"tissue","layer":"snack","slot":11},{"kind":"soda","layer":"daily","slot":18},{"kind":"croissant","layer":"drink","slot":8}],
     groundLayout:{centers:[[16,19],[43,21],[76,19],[22,59],[53,61],[82,63]],radiusBase:3.2,radiusStep:2.9,radiusCycle:7}
   },
-  {
-    // 第15关：策略挑战③；114件 / 14种。策略链：milk → cookie → tissue → chocolate（最后一类先归位）。
-    id:15, name:"策略挑战③",
-    counts:{"wine":11,"milk":3,"cookie":3,"tissue":3,"soda":11,"croissant":10,"water":10,"chips":10,"shampoo":10,"chocolate":3,"orange_juice":10,"candy":10,"toothpaste":10,"coffee":10},
-    columns:10, depth:10, groupFillRatio:0.85, basketCapacity:3, seed:404,
-    wrongShelf:[{"kind":"cookie","layer":"drink","slot":0},{"kind":"cookie","layer":"drink","slot":10},{"kind":"cookie","layer":"drink","slot":20},{"kind":"tissue","layer":"snack","slot":0},{"kind":"tissue","layer":"snack","slot":10},{"kind":"tissue","layer":"snack","slot":20},{"kind":"chocolate","layer":"daily","slot":0},{"kind":"chocolate","layer":"daily","slot":10},{"kind":"chocolate","layer":"daily","slot":20}],
-    groundLayout:{centers:[[16,19],[43,21],[76,19],[22,59],[53,61],[82,63]],radiusBase:3.2,radiusStep:2.9,radiusCycle:7}
+  // {
+  //   // 第15关：策略挑战③；114件 / 14种。策略链：milk → cookie → tissue → chocolate（最后一类先归位）。
+  //   id:15, name:"货架连环堵塞3",
+  //   counts:{"wine":11,"milk":3,"cookie":3,"tissue":3,"soda":11,"croissant":10,"water":10,"chips":10,"shampoo":10,"chocolate":3,"orange_juice":10,"candy":10,"toothpaste":10,"coffee":10},
+  //   columns:10, depth:10, groupFillRatio:0.85, basketCapacity:3, seed:404,
+  //   wrongShelf:[{"kind":"cookie","layer":"drink","slot":0},{"kind":"cookie","layer":"drink","slot":10},{"kind":"cookie","layer":"drink","slot":20},{"kind":"tissue","layer":"snack","slot":0},{"kind":"tissue","layer":"snack","slot":10},{"kind":"tissue","layer":"snack","slot":20},{"kind":"chocolate","layer":"daily","slot":0},{"kind":"chocolate","layer":"daily","slot":10},{"kind":"chocolate","layer":"daily","slot":20}],
+  //   groundLayout:{centers:[[16,19],[43,21],[76,19],[22,59],[53,61],[82,63]],radiusBase:3.2,radiusStep:2.9,radiusCycle:7}
+  // },
+
+{
+  // 第15关：满架分批周转
+  // 货架错放商品显著增加。
+  // 牛奶位置被曲奇占据，曲奇位置被卫生纸占据。
+  // 玩家需要先清理卫生纸，再整理曲奇，最后归位牛奶。
+  // 篮子只有3格，不能随意装满无法归位的商品。
+
+  id: 15,
+  name: "满架分批周转",
+
+  counts: {
+    wine: 11,
+    milk: 3,
+    cookie: 3,
+    tissue: 3,
+    soda: 11,
+    croissant: 10,
+    water: 10,
+    chips: 10,
+    shampoo: 10,
+    chocolate: 3,
+    orange_juice: 10,
+    candy: 10,
+    toothpaste: 10,
+    coffee: 10
   },
+
+  columns: 10,
+  depth: 10,
+  groupFillRatio: 0.85,
+  basketCapacity: 3,
+  seed: 404,
+
+  wrongShelf: [
+    // 第一重阻塞：曲奇占据牛奶位置
+    { kind: "cookie", layer: "drink", slot: 0 },
+    { kind: "cookie", layer: "drink", slot: 10 },
+    { kind: "cookie", layer: "drink", slot: 20 },
+
+    // 第二重阻塞：卫生纸占据曲奇位置
+    { kind: "tissue", layer: "snack", slot: 0 },
+    { kind: "tissue", layer: "snack", slot: 10 },
+    { kind: "tissue", layer: "snack", slot: 20 },
+
+    // 第一批密集错放
+    { kind: "croissant", layer: "drink", slot: 30 },
+    { kind: "orange_juice", layer: "snack", slot: 32 },
+    { kind: "orange_juice", layer: "daily", slot: 34 },
+    { kind: "chips", layer: "drink", slot: 36 },
+    { kind: "toothpaste", layer: "snack", slot: 38 },
+
+    // 第二批
+    { kind: "wine", layer: "snack", slot: 40 },
+    { kind: "croissant", layer: "daily", slot: 42 },
+    { kind: "toothpaste", layer: "drink", slot: 44 },
+    { kind: "water", layer: "snack", slot: 46 },
+    { kind: "candy", layer: "daily", slot: 48 },
+
+    // 第三批
+    { kind: "orange_juice", layer: "daily", slot: 50 },
+    { kind: "chocolate", layer: "drink", slot: 52 },
+    { kind: "coffee", layer: "snack", slot: 54 },
+    { kind: "croissant", layer: "daily", slot: 56 },
+    { kind: "chocolate", layer: "drink", slot: 58 },
+
+    // 第四批
+    { kind: "chips", layer: "drink", slot: 60 },
+    { kind: "coffee", layer: "snack", slot: 62 },
+    { kind: "chips", layer: "daily", slot: 64 },
+    { kind: "chocolate", layer: "drink", slot: 66 },
+    { kind: "wine", layer: "snack", slot: 68 },
+
+    // 第五批
+    { kind: "coffee", layer: "snack", slot: 70 },
+    { kind: "wine", layer: "daily", slot: 72 },
+    { kind: "toothpaste", layer: "drink", slot: 74 },
+    { kind: "water", layer: "snack", slot: 76 },
+    { kind: "candy", layer: "daily", slot: 78 },
+
+    // 第六批
+    { kind: "water", layer: "daily", slot: 80 },
+    { kind: "candy", layer: "drink", slot: 82 },
+    { kind: "water", layer: "snack", slot: 31 },
+    { kind: "toothpaste", layer: "drink", slot: 33 },
+    { kind: "orange_juice", layer: "daily", slot: 35 }
+  ],
+
+  groundLayout: {
+    centers: [
+      [16, 19],
+      [43, 21],
+      [76, 19],
+      [22, 59],
+      [53, 61],
+      [82, 63]
+    ],
+    radiusBase: 3.2,
+    radiusStep: 2.9,
+    radiusCycle: 7
+  }
+},
+
   {
     // 第16关：方便面上架；126件 / 15种。普通整理关，错放商品可逐步清理。
     id:16, name:"方便面上架",
@@ -236,14 +480,140 @@ const LEVEL_CONFIGS = [
     wrongShelf:[{"kind":"cookie","layer":"drink","slot":27},{"kind":"detergent","layer":"snack","slot":4},{"kind":"instant_noodles","layer":"daily","slot":11},{"kind":"candy","layer":"drink","slot":20},{"kind":"shampoo","layer":"snack","slot":28},{"kind":"croissant","layer":"daily","slot":5},{"kind":"tissue","layer":"drink","slot":15},{"kind":"facial_tissue","layer":"snack","slot":23},{"kind":"green_tea","layer":"daily","slot":1},{"kind":"soap","layer":"drink","slot":12},{"kind":"orange_juice","layer":"snack","slot":20},{"kind":"chips","layer":"daily","slot":29},{"kind":"chocolate","layer":"drink","slot":11},{"kind":"milk","layer":"snack","slot":19},{"kind":"wine","layer":"daily","slot":28},{"kind":"popcorn","layer":"drink","slot":14},{"kind":"toothpaste","layer":"snack","slot":22},{"kind":"coffee","layer":"daily","slot":2},{"kind":"chips","layer":"drink","slot":19},{"kind":"soda","layer":"snack","slot":27},{"kind":"water","layer":"daily","slot":8},{"kind":"cookie","layer":"drink","slot":26},{"kind":"wine","layer":"snack","slot":5},{"kind":"milk","layer":"daily","slot":16},{"kind":"shampoo","layer":"drink","slot":5},{"kind":"water","layer":"snack","slot":14},{"kind":"soda","layer":"daily","slot":25},{"kind":"tissue","layer":"drink","slot":22},{"kind":"green_tea","layer":"snack","slot":1},{"kind":"croissant","layer":"daily","slot":13}],
     groundLayout:{centers:[[15,18],[40,20],[72,18],[18,55],[47,61],[79,61],[32,39],[66,42]],radiusBase:3.2,radiusStep:2.9,radiusCycle:7}
   },
-  {
-    // 第20关：策略挑战④；170件 / 20种。策略链：milk → cookie → tissue → chocolate → detergent（最后一类先归位）。
-    id:20, name:"策略挑战④",
-    counts:{"wine":11,"milk":3,"cookie":3,"tissue":3,"soda":11,"croissant":11,"water":11,"chips":11,"shampoo":10,"chocolate":3,"orange_juice":10,"candy":10,"toothpaste":10,"coffee":10,"instant_noodles":10,"soap":10,"green_tea":10,"popcorn":10,"detergent":3,"facial_tissue":10},
-    columns:10, depth:12, groupFillRatio:0.85, basketCapacity:3, seed:489,
-    wrongShelf:[{"kind":"cookie","layer":"drink","slot":0},{"kind":"cookie","layer":"drink","slot":10},{"kind":"cookie","layer":"drink","slot":20},{"kind":"tissue","layer":"snack","slot":0},{"kind":"tissue","layer":"snack","slot":10},{"kind":"tissue","layer":"snack","slot":20},{"kind":"chocolate","layer":"daily","slot":0},{"kind":"chocolate","layer":"daily","slot":10},{"kind":"chocolate","layer":"daily","slot":20},{"kind":"detergent","layer":"snack","slot":5},{"kind":"detergent","layer":"snack","slot":15},{"kind":"detergent","layer":"snack","slot":25}],
-    groundLayout:{centers:[[15,18],[40,20],[72,18],[18,55],[47,61],[79,61],[32,39],[66,42]],radiusBase:3.2,radiusStep:2.9,radiusCycle:7}
+  // {
+  //   // 第20关：策略挑战④；170件 / 20种。策略链：milk → cookie → tissue → chocolate → detergent（最后一类先归位）。
+  //   id:20, name:"货架连环堵塞4",
+  //   counts:{"wine":11,"milk":3,"cookie":3,"tissue":3,"soda":11,"croissant":11,"water":11,"chips":11,"shampoo":10,"chocolate":3,"orange_juice":10,"candy":10,"toothpaste":10,"coffee":10,"instant_noodles":10,"soap":10,"green_tea":10,"popcorn":10,"detergent":3,"facial_tissue":10},
+  //   columns:10, depth:12, groupFillRatio:0.85, basketCapacity:3, seed:489,
+  //   wrongShelf:[{"kind":"cookie","layer":"drink","slot":0},{"kind":"cookie","layer":"drink","slot":10},{"kind":"cookie","layer":"drink","slot":20},{"kind":"tissue","layer":"snack","slot":0},{"kind":"tissue","layer":"snack","slot":10},{"kind":"tissue","layer":"snack","slot":20},{"kind":"chocolate","layer":"daily","slot":0},{"kind":"chocolate","layer":"daily","slot":10},{"kind":"chocolate","layer":"daily","slot":20},{"kind":"detergent","layer":"snack","slot":5},{"kind":"detergent","layer":"snack","slot":15},{"kind":"detergent","layer":"snack","slot":25}],
+  //   groundLayout:{centers:[[15,18],[40,20],[72,18],[18,55],[47,61],[79,61],[32,39],[66,42]],radiusBase:3.2,radiusStep:2.9,radiusCycle:7}
+  // }
+
+{
+  // 第20关：双线货架解锁
+  // 终极策略关：大量商品错放于货架。
+  //
+  // 路线A：先清理洗发水，释放曲奇目标位置。
+  // 路线B：先清理可乐，释放卫生纸目标位置。
+  // 两条路线完成后，才能清理饮料区的曲奇和卫生纸。
+  // 最后释放牛奶的全部目标槽位。
+  //
+  // 篮子容量只有3，错误拾取会造成死局。
+
+  id: 20,
+  name: "双线货架解锁",
+
+  counts: {
+    wine: 11,
+    milk: 3,
+    cookie: 3,
+    tissue: 3,
+    soda: 11,
+    croissant: 11,
+    water: 11,
+    chips: 11,
+    shampoo: 10,
+    chocolate: 3,
+    orange_juice: 10,
+    candy: 10,
+    toothpaste: 10,
+    coffee: 10,
+    instant_noodles: 10,
+    soap: 10,
+    green_tea: 10,
+    popcorn: 10,
+    detergent: 3,
+    facial_tissue: 10
+  },
+
+  columns: 10,
+  depth: 12,
+  groupFillRatio: 0.85,
+  basketCapacity: 3,
+  seed: 489,
+
+  wrongShelf: [
+    // 最终阻塞：牛奶目标区域
+    { kind: "cookie", layer: "drink", slot: 0 },
+    { kind: "cookie", layer: "drink", slot: 10 },
+    { kind: "tissue", layer: "drink", slot: 20 },
+
+    // 路线A：洗发水占据曲奇位置
+    { kind: "shampoo", layer: "snack", slot: 0 },
+    { kind: "shampoo", layer: "snack", slot: 10 },
+    { kind: "shampoo", layer: "snack", slot: 20 },
+
+    // 路线B：可乐占据卫生纸位置
+    { kind: "soda", layer: "daily", slot: 0 },
+    { kind: "soda", layer: "daily", slot: 10 },
+    { kind: "soda", layer: "daily", slot: 20 },
+
+    // 大量附加错放商品
+    { kind: "green_tea", layer: "daily", slot: 30 },
+    { kind: "popcorn", layer: "drink", slot: 32 },
+    { kind: "detergent", layer: "snack", slot: 34 },
+    { kind: "instant_noodles", layer: "daily", slot: 36 },
+    { kind: "detergent", layer: "drink", slot: 38 },
+
+    { kind: "instant_noodles", layer: "drink", slot: 40 },
+    { kind: "facial_tissue", layer: "snack", slot: 42 },
+    { kind: "chips", layer: "daily", slot: 44 },
+    { kind: "soap", layer: "drink", slot: 46 },
+    { kind: "orange_juice", layer: "snack", slot: 48 },
+
+    { kind: "wine", layer: "snack", slot: 50 },
+    { kind: "green_tea", layer: "daily", slot: 52 },
+    { kind: "toothpaste", layer: "drink", slot: 54 },
+    { kind: "toothpaste", layer: "snack", slot: 56 },
+    { kind: "instant_noodles", layer: "daily", slot: 58 },
+
+    { kind: "chocolate", layer: "daily", slot: 60 },
+    { kind: "chocolate", layer: "drink", slot: 62 },
+    { kind: "coffee", layer: "snack", slot: 64 },
+    { kind: "chips", layer: "daily", slot: 66 },
+    { kind: "candy", layer: "drink", slot: 68 },
+
+    { kind: "croissant", layer: "drink", slot: 70 },
+    { kind: "soap", layer: "snack", slot: 72 },
+    { kind: "green_tea", layer: "daily", slot: 74 },
+    { kind: "chips", layer: "drink", slot: 76 },
+    { kind: "facial_tissue", layer: "snack", slot: 78 },
+
+    { kind: "green_tea", layer: "snack", slot: 80 },
+    { kind: "water", layer: "daily", slot: 82 },
+    { kind: "facial_tissue", layer: "drink", slot: 84 },
+    { kind: "wine", layer: "snack", slot: 86 },
+    { kind: "chips", layer: "daily", slot: 88 },
+
+    { kind: "candy", layer: "daily", slot: 90 },
+    { kind: "toothpaste", layer: "drink", slot: 92 },
+    { kind: "coffee", layer: "snack", slot: 94 },
+    { kind: "popcorn", layer: "daily", slot: 96 },
+    { kind: "popcorn", layer: "drink", slot: 98 },
+
+    { kind: "instant_noodles", layer: "drink", slot: 100 },
+    { kind: "wine", layer: "snack", slot: 102 },
+    { kind: "popcorn", layer: "daily", slot: 104 },
+    { kind: "facial_tissue", layer: "drink", slot: 106 }
+  ],
+
+  groundLayout: {
+    centers: [
+      [15, 18],
+      [40, 20],
+      [72, 18],
+      [18, 55],
+      [47, 61],
+      [79, 61],
+      [32, 39],
+      [66, 42]
+    ],
+    radiusBase: 3.2,
+    radiusStep: 2.9,
+    radiusCycle: 7
   }
+}
+
 ];
 // =================== 关卡编辑区结束 ===================
 
